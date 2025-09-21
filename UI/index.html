@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastAPI Job Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        h2 {
+            color: #444;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .response {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 FastAPI Job Manager</h1>
+    
+    <!-- Root Endpoint -->
+    <div class="container">
+        <h2>1. Root Endpoint</h2>
+        <button onclick="callRoot()">Test Root Endpoint</button>
+        <div id="rootResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- Add Job (POST) -->
+    <div class="container">
+        <h2>2. Add Job (POST)</h2>
+        <form onsubmit="addJob(event)">
+            <label for="fileName">File Name:</label>
+            <input type="text" id="fileName" name="fileName" value="video.mp4" required>
+            
+            <label for="jobType">Job Type:</label>
+            <select id="jobType" name="jobType" required>
+                <option value="file">File</option>
+                <option value="rtsp">RTSP</option>
+            </select>
+            
+            <button type="submit">Add Job</button>
+        </form>
+        <div id="addJobResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- Get All Jobs -->
+    <div class="container">
+        <h2>3. Get All Jobs</h2>
+        <button onclick="getAllJobs()">Get All Jobs</button>
+        <div id="getJobsResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- Get Item by ID -->
+    <div class="container">
+        <h2>4. Get Item by ID</h2>
+        <form onsubmit="getItem(event)">
+            <label for="itemId">Item ID:</label>
+            <input type="number" id="itemId" name="itemId" value="123" required>
+            
+            <button type="submit">Get Item</button>
+        </form>
+        <div id="getItemResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+
+        function showResponse(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `response ${isError ? 'error' : 'success'}`;
+            element.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // 1. Root endpoint
+        async function callRoot() {
+            try {
+                const response = await fetch(`${API_BASE}/`);
+                const data = await response.json();
+                showResponse('rootResponse', data);
+            } catch (error) {
+                showResponse('rootResponse', {error: error.message}, true);
+            }
+        }
+
+        // 2. Add job (POST)
+        async function addJob(event) {
+            event.preventDefault();
+            const fileName = document.getElementById('fileName').value;
+            const jobType = document.getElementById('jobType').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/jobs/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        file: fileName,
+                        job_type: jobType
+                    })
+                });
+                const data = await response.json();
+                showResponse('addJobResponse', data);
+            } catch (error) {
+                showResponse('addJobResponse', {error: error.message}, true);
+            }
+        }
+
+        // 3. Get all jobs
+        async function getAllJobs() {
+            try {
+                const response = await fetch(`${API_BASE}/jobs`);
+                const data = await response.json();
+                showResponse('getJobsResponse', data);
+            } catch (error) {
+                showResponse('getJobsResponse', {error: error.message}, true);
+            }
+        }
+
+        // 4. Get item by ID
+        async function getItem(event) {
+            event.preventDefault();
+            const itemId = document.getElementById('itemId').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/items/${itemId}`);
+                const data = await response.json();
+                showResponse('getItemResponse', data);
+            } catch (error) {
+                showResponse('getItemResponse', {error: error.message}, true);
+            }
+        }
+    </script>
+</body>
+</html>
